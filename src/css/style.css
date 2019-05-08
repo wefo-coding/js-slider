@@ -1,6 +1,6 @@
 .wefo-slider{
     display: block !important;
-    
+    position: relative;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;

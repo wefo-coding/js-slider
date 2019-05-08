@@ -61,9 +61,14 @@
         while(this.currentCount < this.sliderItems.length && this.getSpace() >= this.sliderItems[(this.currentFirst + this.currentCount + 1) % this.sliderItems.length].offsetWidth){
             this.addItem();
         }
+        while(this.getSpace() < 0){
+            this.deleteItem('ltr');
+        }
         
         this.sliderItemsElement.style.height = this.getMaxItemHeight() + "px";
         this.sliderItemsElement.style.top = (this.sliderElement.offsetHeight - this.sliderItemsElement.offsetHeight) / 2 + "px";
+        
+        this.updatePositions();
     };
     
     /*Gibt die Höhe des größten Items zurück*/
@@ -96,20 +101,26 @@
         add.offsetHeight; // Trigger a reflow, flushing the CSS changes
         add.classList.remove('notransition'); // Re-enable transitions
         add.style.opacity = '1';
-        this.currentFirst = direction === 'ltr' ? this.currentFirst === -1 ? this.sliderItems.length - 1 : (this.currentFirst + this.sliderItems.length - 1) % this.sliderItems.length : this.currentFirst === -1 ? 0 : this.currentFirst; // ID des neuen ersten Items
+        this.currentFirst = direction === 'ltr' ? this.currentFirst === -1 ? this.sliderItems.length - 1 : (this.currentFirst + this.sliderItems.length - 1) % this.sliderItems.length : this.currentFirst === -1 ? 0 : this.sliderItems.length === this.currentCount ? (this.currentFirst + 1) % this.sliderItems.length : this.currentFirst; // ID des neuen ersten Items
         this.currentCount = Math.min(this.currentCount + 1, this.sliderItems.length);
         while(this.getSpace() < 0){
-            this.currentCount--;
-            if(direction == 'ltr'){
-                this.sliderItems[(this.currentFirst + this.currentCount) % this.sliderItems.length].style.left = Math.round(this.sliderItemsElement.offsetWidth + 1) + 'px';
-            }
-            else{
-                this.sliderItems[this.currentFirst].style.left = (- Math.round(this.sliderItems[this.currentFirst].offsetWidth + 1)) + 'px';
-                this.currentFirst = (++this.currentFirst) % this.sliderItems.length;
-            }
+            this.deleteItem(direction);
         }
         this.updatePositions();
     };
+    
+    /*Blendet ein Item aus.*/
+    Slider.prototype.deleteItem = function(direction){
+        direction = direction || 'rtl'; //Defaultwert: right-to-left
+        this.currentCount--;
+        if(direction == 'ltr'){
+            this.sliderItems[(this.currentFirst + this.currentCount) % this.sliderItems.length].style.left = Math.round(this.sliderItemsElement.offsetWidth + 1) + 'px';
+        }
+        else{
+            this.sliderItems[this.currentFirst].style.left = (- Math.round(this.sliderItems[this.currentFirst].offsetWidth + 1)) + 'px';
+            this.currentFirst = (++this.currentFirst) % this.sliderItems.length;
+        }
+    }
     
     /*Ordnet die Items neu an.*/
     Slider.prototype.updatePositions = function(){
@@ -131,4 +142,5 @@
     
     /*Initialisierung aller Slider*/
     global.onload = updateSliders;
+    global.onresize = updateSliders;
 }(window));

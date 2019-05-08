@@ -1,0 +1,41 @@
+body{
+    font-family: sans-serif;
+    margin: 0;
+}
+
+#my-slider{
+    margin-top: 50px;
+    height: 40px;
+    background-color: #55a;
+    padding: 0 40px;
+}
+
+.my-slider-item{
+    width: 200px;
+    border: 3px solid #aaa;
+    background-color: #ddf;
+    line-height: 50px;
+    text-align: center;
+    font-size: 30px;
+    color: #555;
+}
+
+.my-slider-left,
+.my-slider-right{
+    position: absolute;
+    z-index: 1;
+    width: 40px;
+    height: 40px;
+    top: 0;
+    font-size: 35px;
+    text-align: center;
+    color: #fff;
+}
+
+.my-slider-left{
+    left: 0;
+}
+
+.my-slider-right{
+    right: 0;
+}
