@@ -1,7 +1,5 @@
 (function (global) {
     
-    "use strict";
-    
     /*Speichert die auf der Seite auftauchenden Slider als Slider-Objekte.*/
     var sliders = [];
     
