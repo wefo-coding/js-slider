@@ -21,21 +21,45 @@
             this.currentFirst = -1;
             this.currentCount = 0;
             this.startSlideX = 0;
+            this.dragX = 0;
             
             /*Touchscreen drag*/
             this.sliderItemsElement.ontouchstart = function(event){
-                this.startSlideX = event.touches[0].screenX;
+                self.startSlideX = event.touches[0].screenX;
             }
             this.sliderItemsElement.ontouchmove = function(event){
-                console.log(event.touches[0].screenX - this.startSlideX);
+                self.dragX = event.touches[0].screenX - self.startSlideX;
+            }
+            this.sliderItemsElement.ontouchend = function(event){
+                if(self.dragX > 20){
+                    self.addItem('ltr');
+                }
+                else if(self.dragX < -20){
+                    self.addItem('rtl');
+                }
+            }
+            this.sliderItemsElement.ontouchcancel = function(event){
+                if(self.dragX > 20){
+                    self.addItem('ltr');
+                }
+                else if(self.dragX < -20){
+                    self.addItem('rtl');
+                }
             }
             
             /*Mouse drag*/
             this.sliderItemsElement.onmousedown = function(event){
-                this.startSlideX = event.clientLeft;
+                self.startSlideX = event.clientX;
             }
-            this.sliderItemsElement.onmousemove = function(event){
-                console.log(event.clientLeft - this.startSlideX);
+            
+            this.sliderItemsElement.onmouseup = function(event){
+                self.dragX = event.clientX - self.startSlideX;
+                if(self.dragX > 20){
+                    self.addItem('ltr');
+                }
+                else if(self.dragX < -20){
+                    self.addItem('rtl');
+                }
             }
             
             /*Mouse scroll*/
@@ -68,6 +92,14 @@
         
         this.sliderItemsElement.style.height = this.getMaxItemHeight() + "px";
         this.sliderItemsElement.style.top = (this.sliderElement.offsetHeight - this.sliderItemsElement.offsetHeight) / 2 + "px";
+        
+        for(var i = this.currentFirst + this.currentCount; i % this.sliderItems.length != this.currentFirst; i++ )
+        {
+            this.sliderItems[i % this.sliderItems.length].classList.add('notransition'); // Disable transitions
+            this.sliderItems[i % this.sliderItems.length].style.left = '100%';
+            this.sliderItems[i % this.sliderItems.length].offsetHeight; // Trigger a reflow, flushing the CSS changes
+            this.sliderItems[i % this.sliderItems.length].classList.remove('notransition'); // Re-enable transitions
+        }
         
         this.updatePositions();
     };
