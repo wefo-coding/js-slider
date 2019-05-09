@@ -55,10 +55,11 @@
     Slider.prototype.update = function(){
             
         for(var i = 0; i < this.sliderItems.length; i++){
+            this.sliderItems[i].style.width = null;
             this.sliderItems[i].style.width = getComputedStyle(this.sliderItems[i]).width
         }
         
-        while(this.currentCount < this.sliderItems.length && this.getSpace() >= this.sliderItems[(this.currentFirst + this.currentCount + 1) % this.sliderItems.length].offsetWidth){
+        while(this.currentCount < this.sliderItems.length && (this.currentFirst === -1 || this.getSpace() >= this.sliderItems[(this.currentFirst + this.currentCount) % this.sliderItems.length].offsetWidth)){
             this.addItem();
         }
         while(this.getSpace() < 0){
@@ -88,7 +89,7 @@
         for(var i = this.currentFirst; i < this.currentFirst + this.currentCount; i++){
             space -= this.sliderItems[i % this.sliderItems.length].offsetWidth;
         }
-        return space;
+        return space == - 1 ? 0 : space;
     };
     
     /*Blendet ein Item von einer bestimmten richtung kommend aus ein.
@@ -132,6 +133,12 @@
             left += Math.round(this.sliderItems[i % this.sliderItems.length].offsetWidth);
         }
     };
+    
+    /*Prüft, ob ein weiteres Item eingefügt werden kann.*/
+    Slider.prototype.canAddItem = function(direction){
+        direction = direction || 'rtl'; //Defaultwert: right-to-left
+        /*TODO implement!!*/
+    }
     
     /*Führt die update-Methode aller Slider aus.*/
     function updateSliders(){
