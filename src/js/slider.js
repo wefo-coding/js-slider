@@ -1,3 +1,11 @@
+/**
+ * JavaScript Slider - Easy to use and very flexible.
+ * 
+ * Link:    https://github.com/wefo-coding/js-slider
+ * Author:  Florian Otten
+ * Version: 0.1.1
+ */
+
 (function (global) {
     
     /*Speichert die auf der Seite auftauchenden Slider als Slider-Objekte.*/
@@ -7,7 +15,9 @@
     var sliderElements = global.document.getElementsByClassName('wefo-slider');
     
     /*Lade alle Slider.*/
-    for (var i = 0; i < sliderElements.length; i++){
+    var i;
+    var countSlider = sliderElements.length;
+    for (i = 0; i < countSlider; i++){
         sliders.push(new Slider(sliderElements[i]));
     }
     
@@ -121,13 +131,14 @@
         for(var i = this.currentFirst; i < this.currentFirst + this.currentCount; i++){
             space -= this.sliderItems[i % this.sliderItems.length].offsetWidth;
         }
-        return space == - 1 ? 0 : space;
+        return space + 1;
     };
     
     /*Blendet ein Item von einer bestimmten richtung kommend aus ein.
       Dabei werden so viele Items, wie notwendig aus dem Weg geräumt.*/
     Slider.prototype.addItem = function(direction){
         direction = direction || 'rtl'; //Defaultwert: right-to-left
+        
         var add = this.sliderItems[(direction === 'ltr' ? this.currentFirst === -1 ? this.sliderItems.length - 1 : this.currentFirst + this.sliderItems.length -1 : this.currentFirst === -1 ? 0 : this.currentFirst + this.currentCount) % this.sliderItems.length]; //Das Item, welches eingefügt werden soll
         add.classList.add('notransition'); // Disable transitions
         add.style.left = direction === 'ltr' ? (- add.offsetWidth) + 'px' : this.sliderItemsElement.offsetWidth + 'px';
@@ -140,6 +151,8 @@
             this.deleteItem(direction);
         }
         this.updatePositions();
+        
+        console.log(this.canAddItem('ltr'));
     };
     
     /*Blendet ein Item aus.*/
@@ -166,20 +179,75 @@
         }
     };
     
-    /*Prüft, ob ein weiteres Item eingefügt werden kann.*/
+    /**
+     * Checks if there is enough space for the next item.
+     * 
+     * @param {string} [direction='rtl'] The direction of adding the item.
+     * 
+     * @return {boolean} true if there is enough place to add the next item; otherwise false.
+     */
     Slider.prototype.canAddItem = function(direction){
-        direction = direction || 'rtl'; //Defaultwert: right-to-left
-        /*TODO implement!!*/
+        direction = direction || 'rtl';
+        
+        if(this.currentCount === this.sliderItems.length){
+            return false;
+        }
+        
+        return this.getSpace() >= this.sliderItems[this.nextIndex(direction)].offsetWidth;
     }
     
-    /*Führt die update-Methode aller Slider aus.*/
+    /**
+     * Returns the index of the first visible Item.
+     * 
+     * @return {number} Index of the first visible Item.
+     */
+    Slider.prototype.firstIndex = function(){
+        return this.currentFirst;
+    }
+    
+    /**
+     * Returns the index of the last visible Item.
+     * 
+     * @return {number} Index of the last visible Item.
+     */
+    Slider.prototype.lastIndex = function(){
+        return (this.currentFirst + this.currentCount) % this.sliderItems.length;
+    }
+    
+    /**
+     * Returns the index of the next Item.
+     * 
+     * @param {string} [direction='rtl'] The direction of adding the item.
+     * 
+     * @return {number} Index of the next Item.
+     */
+    Slider.prototype.nextIndex = function(direction){
+        direction = direction || 'rtl';
+        
+        var first = this.firstIndex(); 
+        var countItems = this.sliderItems.length;
+        
+        if(direction === 'ltr'){
+            return first < 0 ? countItems - 1 : (first + countItems - 1) % countItems;
+        }
+        
+        return first < 0 ? 0 : (this.lastIndex() + 1) % countItems;
+    }
+    
+    
+    
+    /**
+     * Invokes the update method of all sliders.
+     */
     function updateSliders(){
-        for (var i = 0; i < sliders.length; i++){
+        var i;
+        var countSliders = sliders.length;
+        for (i = 0; i < countSliders; i++){
             sliders[i].update();
         }
     }
     
-    /*Initialisierung aller Slider*/
+    /*Init*/
     global.onload = updateSliders;
     global.onresize = updateSliders;
 }(window));
