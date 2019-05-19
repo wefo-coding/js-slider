@@ -73,13 +73,19 @@
             }
             
             /*Use Buttons*/
-            sliderElement.getElementsByClassName('wefo-slider-left')[0].onclick = function(){
-                self.addItem('ltr');
-            };
+            var leftButtons = sliderElement.getElementsByClassName('wefo-slider-left');
+            for(var i = 0; i < leftButtons.length; i++){
+                sliderElement.getElementsByClassName('wefo-slider-left')[0].onclick = function(){
+                    self.addItem('ltr');
+                };
+            }
             
-            sliderElement.getElementsByClassName('wefo-slider-right')[0].onclick = function(){
-                self.addItem('rtl');
-            };
+            var rightButtons = sliderElement.getElementsByClassName('wefo-slider-right');
+            for(var i = 0; i < rightButtons.length; i++){
+                sliderElement.getElementsByClassName('wefo-slider-right')[0].onclick = function(){
+                    self.addItem('rtl');
+                };
+            }
         }
     }
     
