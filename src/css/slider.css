@@ -32,6 +32,7 @@
     -webkit-transform: translate(0, -50%) !important;
     margin: 0 !important;
     left: 100%;
+    overflow: hidden !important;
     -webkit-transition: left .75s, opacity .75s;
     -moz-transition: left .75s, opacity .75s;
     -o-transition: left .75s, opacity .75s;

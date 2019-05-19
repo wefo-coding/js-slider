@@ -64,6 +64,11 @@
                     self.addItem('rtl');
                 }
             }
+        
+            var imgs = sliderElement.getElementsByTagName('img');
+            for (var i=0; i<imgs.length; i++) {
+                imgs[i].setAttribute('draggable', 'false');
+            }
             
             /*Use Buttons*/
             var leftButtons = sliderElement.getElementsByClassName('wefo-slider-left');
