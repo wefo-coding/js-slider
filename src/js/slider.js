@@ -152,8 +152,9 @@
      */
     Slider.prototype.addItem = function(direction){
         direction = direction || 'rtl'; //Defaultwert: right-to-left
+        var newIndex = this.addIndex(direction);
         
-        var add = this.sliderItems[this.addIndex(direction)];
+        var add = this.sliderItems[newIndex];
         
         //MOVE
         add.classList.add('notransition'); // Disable transitions
@@ -161,6 +162,8 @@
         add.offsetHeight; // Trigger a reflow, flushing the CSS changes
         add.classList.remove('notransition'); // Re-enable transitions
         add.style.opacity = '1';
+        
+        this.setPreview(newIndex, true);
         
         this.currentFirst = this.nextIndex(direction);
         this.currentCount = Math.min(this.currentCount + 1, this.sliderItems.length);
@@ -193,10 +196,12 @@
         if(direction === 'ltr'){
             //MOVE
             this.lastItem().style.left = Math.round(this.sliderItemsElement.offsetWidth + 1) + 'px';
+            this.setPreview(this.lastIndex(), false)
         }
         else{
             //MOVE
             this.firstItem().style.left = (-Math.round(this.firstItem().offsetWidth + 1)) + 'px';
+            this.setPreview(this.firstIndex(), false)
             this.currentFirst = (this.currentFirst + 1) % this.sliderItems.length;
         }
         
@@ -312,6 +317,30 @@
         return (this.currentFirst + this.currentCount) % countItems;
     }
     
+    
+    /**
+     * Returns all previews of an slider item.
+     * 
+     * @param {number} [index=-1]    Index of the item.
+     * @param {bool}   [active=true] Activate or deactivate.
+     */
+    Slider.prototype.setPreview = function(index, active){
+        index = index || (index === 0 ? 0 : -1);
+        
+        var previewContainers = this.sliderElement.getElementsByClassName('wefo-slider-previews');
+        var tmpPreview;
+        for(var i = 0; i < previewContainers.length; i++){
+            tmpPreview = previewContainers[i].getElementsByClassName('wefo-slider-preview')[index];
+            if(tmpPreview){
+                if(active){
+                    tmpPreview.classList.add('active');
+                }
+                else{
+                    tmpPreview.classList.remove('active');
+                }
+            }
+        }
+    }
     
     
     /**
