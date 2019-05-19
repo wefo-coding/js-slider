@@ -78,3 +78,10 @@ All items that are visible in the wefo-slider-items area will get a class 'activ
 <div class="wefo-slider-preview active">A</div>
 ```
 So you can highlight the previews of visible items.
+
+## Demo
+[simple](https://we-fo.de/js-slider/demo/simple/)
+
+[boxes](https://we-fo.de/js-slider/demo/boxes/)
+
+[header](https://we-fo.de/js-slider/demo/header/)
