@@ -12,14 +12,7 @@
     var sliders = [];
     
     /*Speichert die auf der Seite auftauchenden Slider als DOM-Objekte.*/
-    var sliderElements = global.document.getElementsByClassName('wefo-slider');
-    
-    /*load sliders*/
-    var i;
-    var countSlider = sliderElements.length;
-    for (i = 0; i < countSlider; i++){
-        sliders.push(new Slider(sliderElements[i]));
-    }
+    var sliderElements;
     
     /*Konstruktor-Funktion für einen Slider*/
     function Slider(sliderElement){
@@ -354,7 +347,20 @@
         }
     }
     
+    function init(){
+        sliderElements = global.document.getElementsByClassName('wefo-slider');
+    
+        /*load sliders*/
+        var i;
+        var countSlider = sliderElements.length;
+        for (i = 0; i < countSlider; i++){
+            sliders.push(new Slider(sliderElements[i]));
+        }
+        
+        updateSliders();
+        global.onresize = updateSliders;
+    }
+    
     /*Init*/
-    global.onload = updateSliders;
-    global.onresize = updateSliders;
+    global.onload = init;
 }(window));
