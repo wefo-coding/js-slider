@@ -14,7 +14,7 @@
     /*Speichert die auf der Seite auftauchenden Slider als DOM-Objekte.*/
     var sliderElements = global.document.getElementsByClassName('wefo-slider');
     
-    /*Lade alle Slider.*/
+    /*load sliders*/
     var i;
     var countSlider = sliderElements.length;
     for (i = 0; i < countSlider; i++){
@@ -72,8 +72,6 @@
                 }
             }
             
-            /*Mouse scroll*/
-            
             /*Use Buttons*/
             sliderElement.getElementsByClassName('wefo-slider-left')[0].onclick = function(){
                 self.addItem('ltr');
@@ -85,30 +83,36 @@
         }
     }
     
-    /*Update des Slider-Objekts*/
+    /**
+     * Updates the slider.
+     */
     Slider.prototype.update = function(){
-            
+        
+        /*recalculate width of slider items*/
         for(var i = 0; i < this.sliderItems.length; i++){
             this.sliderItems[i].style.width = null;
             this.sliderItems[i].style.width = getComputedStyle(this.sliderItems[i]).width
         }
         
-        while(this.currentCount < this.sliderItems.length && (this.currentFirst === -1 || this.getSpace() >= this.sliderItems[(this.currentFirst + this.currentCount) % this.sliderItems.length].offsetWidth)){
-            this.addItem();
+        /*recalculate height and vertical positions*/
+        this.sliderItemsElement.style.height = this.getMaxItemHeight() + "px";
+        this.sliderItemsElement.style.top = (this.sliderElement.offsetHeight - this.sliderItemsElement.offsetHeight) / 2 + "px";
+        
+        /*fill space*/
+        if(this.canAddItem('rtl')){
+            this.addItem('rtl');
         }
+        
+        /*remove overflow*/
         while(this.getSpace() < 0){
             this.deleteItem('ltr');
         }
         
-        this.sliderItemsElement.style.height = this.getMaxItemHeight() + "px";
-        this.sliderItemsElement.style.top = (this.sliderElement.offsetHeight - this.sliderItemsElement.offsetHeight) / 2 + "px";
-        
+        /*hide unvisible elements to avoid problems on resize*/
+        /*Wenn man die Fenstergröße anpasst verändert sich der sichtbare Bereich und versteckte elemente kommen zum Vorschein.*/
         for(var i = this.currentFirst + this.currentCount; i % this.sliderItems.length != this.currentFirst; i++ )
         {
-            this.sliderItems[i % this.sliderItems.length].classList.add('notransition'); // Disable transitions
-            this.sliderItems[i % this.sliderItems.length].style.left = '100%';
-            this.sliderItems[i % this.sliderItems.length].offsetHeight; // Trigger a reflow, flushing the CSS changes
-            this.sliderItems[i % this.sliderItems.length].classList.remove('notransition'); // Re-enable transitions
+            this.sliderItems[i % this.sliderItems.length].style.opacity = '0';
         }
         
         this.updatePositions();
@@ -134,45 +138,73 @@
         return space + 1;
     };
     
-    /*Blendet ein Item von einer bestimmten richtung kommend aus ein.
-      Dabei werden so viele Items, wie notwendig aus dem Weg geräumt.*/
+    /**
+     * Adds an item to the visible area of the slider.
+     * If it is necessary visible items will be deleted. If it is possible to add more items, they will be added too.
+     * 
+     * @param {string} [direction='rtl'] The direction of adding the item.
+     */
     Slider.prototype.addItem = function(direction){
         direction = direction || 'rtl'; //Defaultwert: right-to-left
         
-        var add = this.sliderItems[(direction === 'ltr' ? this.currentFirst === -1 ? this.sliderItems.length - 1 : this.currentFirst + this.sliderItems.length -1 : this.currentFirst === -1 ? 0 : this.currentFirst + this.currentCount) % this.sliderItems.length]; //Das Item, welches eingefügt werden soll
+        var add = this.sliderItems[this.addIndex(direction)];
+        
+        //MOVE
         add.classList.add('notransition'); // Disable transitions
         add.style.left = direction === 'ltr' ? (- add.offsetWidth) + 'px' : this.sliderItemsElement.offsetWidth + 'px';
         add.offsetHeight; // Trigger a reflow, flushing the CSS changes
         add.classList.remove('notransition'); // Re-enable transitions
         add.style.opacity = '1';
-        this.currentFirst = direction === 'ltr' ? this.currentFirst === -1 ? this.sliderItems.length - 1 : (this.currentFirst + this.sliderItems.length - 1) % this.sliderItems.length : this.currentFirst === -1 ? 0 : this.sliderItems.length === this.currentCount ? (this.currentFirst + 1) % this.sliderItems.length : this.currentFirst; // ID des neuen ersten Items
+        
+        this.currentFirst = this.nextIndex(direction);
         this.currentCount = Math.min(this.currentCount + 1, this.sliderItems.length);
+        
+        /*remove overflow*/
         while(this.getSpace() < 0){
             this.deleteItem(direction);
         }
-        this.updatePositions();
         
-        console.log(this.canAddItem('ltr'));
+        /*fill space*/
+        while(this.canAddItem(direction)){
+            this.addItem(direction);
+        }
+        
+        this.updatePositions();
     };
     
-    /*Blendet ein Item aus.*/
+    /** 
+     * Removes an item from the visible area of the slider.
+     * 
+     * @param {string} [direction='rtl'] The direction of removing the item.
+     */
     Slider.prototype.deleteItem = function(direction){
-        direction = direction || 'rtl'; //Defaultwert: right-to-left
-        this.currentCount--;
-        if(direction == 'ltr'){
-            this.sliderItems[(this.currentFirst + this.currentCount) % this.sliderItems.length].style.left = Math.round(this.sliderItemsElement.offsetWidth + 1) + 'px';
+        direction = direction || 'rtl';
+        
+        if(this.currentCount == 0){
+            return;
+        }
+        
+        if(direction === 'ltr'){
+            //MOVE
+            this.lastItem().style.left = Math.round(this.sliderItemsElement.offsetWidth + 1) + 'px';
         }
         else{
-            this.sliderItems[this.currentFirst].style.left = (- Math.round(this.sliderItems[this.currentFirst].offsetWidth + 1)) + 'px';
-            this.currentFirst = (++this.currentFirst) % this.sliderItems.length;
+            //MOVE
+            this.firstItem().style.left = (-Math.round(this.firstItem().offsetWidth + 1)) + 'px';
+            this.currentFirst = (this.currentFirst + 1) % this.sliderItems.length;
         }
+        
+        this.currentCount--;
     }
     
-    /*Ordnet die Items neu an.*/
+    /**
+     * Updates the positions of all visible Items.
+     */
     Slider.prototype.updatePositions = function(){
         if (this.currentFirst === -1)
             return;
         var left = Math.round(this.getSpace() / 2);
+        //MOVE
         for(var i = this.currentFirst; i < this.currentFirst + this.currentCount; i++){
             this.sliderItems[i % this.sliderItems.length].style.left = left + 'px';
             left += Math.round(this.sliderItems[i % this.sliderItems.length].offsetWidth);
@@ -193,7 +225,7 @@
             return false;
         }
         
-        return this.getSpace() >= this.sliderItems[this.nextIndex(direction)].offsetWidth;
+        return this.getSpace() >= this.sliderItems[this.addIndex(direction)].offsetWidth;
     }
     
     /**
@@ -206,20 +238,38 @@
     }
     
     /**
+     * Returns the first visible Item.
+     * 
+     * @return {HTMLElement} First visible Item.
+     */
+    Slider.prototype.firstItem = function(){
+        return this.sliderItems[this.firstIndex()];
+    }
+    
+    /**
      * Returns the index of the last visible Item.
      * 
      * @return {number} Index of the last visible Item.
      */
     Slider.prototype.lastIndex = function(){
-        return (this.currentFirst + this.currentCount) % this.sliderItems.length;
+        return (this.currentFirst + this.currentCount - 1) % this.sliderItems.length;
     }
     
     /**
-     * Returns the index of the next Item.
+     * Returns the last visible Item.
+     * 
+     * @return {HTMLElement} Last visible Item.
+     */
+    Slider.prototype.lastItem = function(){
+        return this.sliderItems[this.lastIndex()];
+    }
+    
+    /**
+     * Returns the index of the next first Item.
      * 
      * @param {string} [direction='rtl'] The direction of adding the item.
      * 
-     * @return {number} Index of the next Item.
+     * @return {number} Index of the next first Item.
      */
     Slider.prototype.nextIndex = function(direction){
         direction = direction || 'rtl';
@@ -231,7 +281,29 @@
             return first < 0 ? countItems - 1 : (first + countItems - 1) % countItems;
         }
         
-        return first < 0 ? 0 : (this.lastIndex() + 1) % countItems;
+        
+        return first < 0 ? 0 : countItems === this.currentCount ? (first + 1) % countItems : first;
+    }
+    
+    /**
+     * Returns the index of the next Item to add.
+     * 
+     * @param {string} [direction='rtl'] The direction of adding the item.
+     * 
+     * @return {number} Index of the next Item to add.
+     */
+    Slider.prototype.addIndex = function(direction){
+        direction = direction || 'rtl';
+        
+        var countItems = this.sliderItems.length;
+        
+        if(direction === 'ltr'){
+            return this.nextIndex(direction);
+        }
+        
+        if(this.currentCount == 0)
+            return 0;
+        return (this.currentFirst + this.currentCount) % countItems;
     }
     
     
