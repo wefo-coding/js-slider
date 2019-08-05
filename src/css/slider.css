@@ -26,7 +26,7 @@
     -webkit-box-sizing: border-box !important;
     -moz-box-sizing: border-box !important;
     box-sizing: border-box !important;
-    opacity: 0;
+    /*opacity: 0;*/
     top: 50% !important;
     transform: translate(0, -50%) !important;
     -webkit-transform: translate(0, -50%) !important;
